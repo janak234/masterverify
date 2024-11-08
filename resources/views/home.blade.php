@@ -241,7 +241,7 @@
                         $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
                         $('#show-product-details').append(`<div class="container my-alert">
                                                                 <div class="invalid-box bg-white text-dark text-center">
-                                                                    <img src="red-alert.svg" class="my-alert-icon" >
+                                                                    <img src="/assets/images/red-alert.svg" class="my-alert-icon" >
                                                                     <div class="my-2">
                                                                         <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
                                                                     </div>
@@ -294,7 +294,7 @@
                             $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
                             $('#show-product-details').append(`<div class="container my-alert">
                                                                 <div class="invalid-box bg-white text-dark text-center">
-                                                                    <img src="red-alert.svg" class="my-alert-icon" >
+                                                                    <img src="/assets/images/red-alert.svg" class="my-alert-icon" >
                                                                     <div class="my-2">
                                                                         <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
                                                                     </div>
