@@ -34,6 +34,122 @@
     .my-alert-icon{
         max-width: 15rem;
     }
+	.or .list-group-item {
+		font-size:16px;
+	}
+	.or .card {
+		max-width:18rem;
+		border-radius: 0;
+		margin-bottom : 10px;
+		    margin-left: auto;
+    margin-right: auto;
+	}
+	.or .card .card-title {
+		color : #00c49a;
+	}
+	.or .card .card-img-top {
+		border-top-left-radius: 0px;
+		border-top-right-radius: 0px;
+		width: 100%;
+    height: 380px;
+    object-fit: cover;
+    object-position: top center;
+	}
+	.or .card>.list-group:last-child {
+		border-bottom-right-radius: 0px;
+		border-bottom-left-radius: 0px;
+	}
+	@keyframes glow-grow {
+	  0% {
+		box-shadow: 0px 0px 0px 0px rgba(255,255,255,0.5);
+	  }
+	  70%, 100% {
+		box-shadow: 0px 0px 0px 40px rgba(255,255,255,0);
+	  }
+	}
+	.verify-input .field {
+		border-radius: 999px;
+		animation-name: glow-grow;
+		animation-duration: 1.5s;
+		animation-iteration-count: infinite;
+		animation-timing-function: ease-out;
+		    display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+		-webkit-box-pack: start;
+		-ms-flex-pack: start;
+		justify-content: flex-start;
+		padding: 0;
+	}
+	.verify-input .field.has-addons .control:not(:last-child) {
+		margin-right: -1px;
+	}
+	.verify-input .form-control {
+		padding: 0 15px;
+		height: 53px;
+		    font-size: 1.5rem;
+		line-height : 18px;
+		    border-radius: 999px 0 0 999px;
+			    border: 0;
+	}
+	.verify-input .btn {
+		    border-radius: 0 999px 999px 0;
+		    background: #00d070;
+			padding: 10px 30px;
+			height: auto;
+			width: auto;
+			border: none;
+			color: #fff;
+			font-size: 1.375rem;
+			white-space: nowrap;
+	}
+	.verify-input .btn-primary:active:focus {
+		box-shadow: none;
+	}
+	.invalid-box {
+		padding: 42px;
+		border-radius: 15px;
+	}
+	.invalid-box img {
+		margin-bottom : 24px;
+	}
+	.invalid-box h2 {
+		font-size: 2.5rem;
+		    color: #4a4a4a;
+			padding-bottom:30px;
+	}
+	.invalid-box p {
+		font-size: 1.4rem;
+    line-height: 1.6;
+	}
+	.container.my-alert {
+		padding : 0;
+	}
+	
+	
+	.or .card.row {
+		flex-direction : row;
+		max-width : 600px;
+	}
+	.or .card.row > div{
+		padding : 0;
+	}
+	@media (max-width: 767px) {
+		.invalid-box {padding: 22px;}
+		.invalid-box h2 {
+			font-size: 1.8rem;
+			padding-bottom:10px;
+		}
+		.invalid-box p {
+			font-size: 1rem;
+			line-height: 1.2;
+		}
+	}
+	@media (max-width: 576px) {
+		.or .card.row {
+			max-width : 288px;
+		}
+	}
 </style>
 
 <body>
@@ -44,37 +160,32 @@
             </a>
         </div>
     </nav>
-    <div class="container my-alert mt-5">
-        <div class="bg-white text-dark px-5 py-3 rounded text-center">
-            <img src="/assets/images/red-alert-icon.svg" class="my-alert-icon" >
-            <div class="my-2">
-                <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
-            </div>
-            <p ><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p>
-        </div>
-    </div>
+    
 
-    <header class="py-5 border-bottom">
+    <header class="py-5">
         <div class="container pt-md-1 pb-md-4">
             <div class="row">
-                <div class="col-xl-8">
+                <div id="show-product-details">
+                </div>
+                <div class="col-xl-11 mx-auto">
                     <h1 class="bd-title mt-0">Verify Product</h1>
                     <p class="bd-lead"></p>
-                    <div class="d-flex flex-column flex-sm-row">
-                        <form action="" class="row" style="width: 100%;">
-                            <div class="col-md-6">
-                                <input type="text" class="form-control float-left col-md-12" name="code" id="code">
-                                <input type="hidden" id="address" value="">
-                                <input type="hidden" id="lng" value="">
-                                <input type="hidden" id="lat" value="">
-                                <span class="error codeerr"></span>
-                                <div id="suc">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <button class="btn btn-primary float-left col-dmd-3" type="button"
-                                    id="verify">Verify</button>
-                            </div>
+                    <div class="verify-input">
+                        <form action="">
+							<div class="field has-addons">
+								<div class="control is-fullwidth w-100">
+									<input type="text" class="form-control float-left w-100" name="code" id="code" value="{{ $code ?? '' }}">
+									<input type="hidden" id="address" value="">
+									<input type="hidden" id="lng" value="">
+									<input type="hidden" id="lat" value="">
+									<span class="error codeerr"></span>
+									<div id="suc">
+									</div>
+								</div>
+								<div class="control">
+									<button class="btn btn-primary" type="button" id="verify">Verify <i class="icon ion-checkmark-round"></i></button>
+								</div>
+							</div>
                         </form>
                     </div>
                 </div>
@@ -116,26 +227,85 @@
                 },
                 beforeSend: function() {
                     jQuery('.codeerr').text('');
-                    $('#suc').html('');
+                    $('#show-product-details').empty('');
                     $('.or').remove()
                 },
                 complete: function() {},
                 success: function(json) {
                     if (json.success) {
-                        $('#suc').html('<p>' + json.msg + '</p>');
+                        $('#show-product-details').append('<p>' + json.msg + '</p>');
                         //if (json.is_verified == 0) {
-                        $('#suc').after('<div class="or"><img src="' + json.data.image + '"><span>' + json.data.name + '</span><span>Manufacturing Date : ' + json.data.manufacturing + '</span><span>Expiry Date : ' + json.data.expiry + '</span><span>Product type : ' + json.data.type + '</span><span>Weight : ' + json.data.weight + '</span><span>Brand : ' + json.data.brand + '</span></div>');
+                        $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="https://masterverify.net/product/1519286376PAPAYA-TANGiE%202.0.jpg"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
                         //}
                     } else {
-                        $('#suc').html('<p>' + json.msg + '</p>');
+                        $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
+                        $('#show-product-details').append(`<div class="container my-alert">
+                                                                <div class="invalid-box bg-white text-dark text-center">
+                                                                    <img src="red-alert.svg" class="my-alert-icon" >
+                                                                    <div class="my-2">
+                                                                        <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
+                                                                    </div>
+                                                                    <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p>
+                                                                </div>
+                                                            </div>`);
                     }
                 }
             });
         });
+
     </script>
     <script>
         jQuery(document).ready(function() {
-            askForLocationPermission()
+            askForLocationPermission();
+            <?php if(isset($code) && $code && !empty($code)) { ?> 
+                var code = jQuery('#code').val();
+                if (code == '') {
+                    jQuery('.codeerr').text('Please Enter Code');
+                    return;
+                }
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                jQuery.ajax({
+                    url: "{{route('verify')}}",
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        code: jQuery('#code').val(),
+                        address: jQuery('#address').val(),
+                        lat: jQuery('#lat').val(),
+                        lng: jQuery('#lng').val(),
+                    },
+                    beforeSend: function() {
+                        jQuery('.codeerr').text('');
+                        $('#show-product-details').empty('');
+                        $('.or').remove()
+                    },
+                    complete: function() {},
+                    success: function(json) {
+                        if (json.success) {
+                            $('#show-product-details').append('<p>' + json.msg + '</p>');
+                            //if (json.is_verified == 0) {
+                                $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="https://masterverify.net/product/1519286376PAPAYA-TANGiE%202.0.jpg"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
+                            //}
+                        } else {
+                            $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
+                            $('#show-product-details').append(`<div class="container my-alert">
+                                                                <div class="invalid-box bg-white text-dark text-center">
+                                                                    <img src="red-alert.svg" class="my-alert-icon" >
+                                                                    <div class="my-2">
+                                                                        <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
+                                                                    </div>
+                                                                    <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p>
+                                                                </div>
+                                                            </div>`);
+                        }
+                    }
+                });
+            <?php } ?>
+
         });
 
         function askForLocationPermission() {

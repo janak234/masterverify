@@ -26,8 +26,12 @@ class HomeController extends Controller
      */
     public function index(Request $request)
     {
-
-        return view('home');
+        if ($request->isMethod('get') && $request->code != '' && $request->code) {
+            $code =  $request->code;
+            return view('home',compact('code'));
+        }else{
+            return view('home');
+        }
     }
 
     public function verify(Request $request)
