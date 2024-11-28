@@ -324,11 +324,13 @@
                             } else {
                                 document.getElementById('location-info').innerHTML =
                                     'Location permission denied.';
+                                    get_thirdparty_locatio();
                             }
                         };
                         navigator.geolocation.getCurrentPosition(
                             () => {}, // Success callback (needed to trigger permission prompt)
                             error => {
+                                get_thirdparty_locatio()
                                 console.error('Error getting location:', error);
                                 document.getElementById('location-info').innerHTML =
                                     'Error getting location.';
@@ -337,6 +339,7 @@
                     }
                 });
             } else {
+                get_thirdparty_locatio();
                 document.getElementById('location-info').innerHTML =
                     'Geolocation permissions API is not supported by this browser.';
             }
@@ -346,6 +349,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition);
             } else {
+                get_thirdparty_locatio();
                 document.getElementById('location-info').innerHTML =
                     'Geolocation is not supported by this browser.';
             }
@@ -363,33 +367,59 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(getGeolocationDetails);
             } else {
+                get_thirdparty_locatio();
                 document.getElementById('location-info').innerHTML =
                     "Geolocation is not supported by this browser.";
             }
         }
 
         function getGeolocationDetails(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            // Use OpenCage API to get detailed location information
-            fetch(
-                    `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=973058f6de3141178726442d18369f14`
-                )
-                .then(response => response.json())
-                .then(data => {
-                    const locationDetails = data.results[0];
-                    console.log(locationDetails);
-                    const formattedAddress = locationDetails.formatted;
-                    $('#address').val(locationDetails.formatted);
-                    $('#lat').val(latitude);
-                    $('#lng').val(longitude);
-                    document.getElementById('location-info').innerHTML = formattedAddress;
-                })
-                .catch(error => {
-                    console.error('Error fetching location details:', error);
-                    document.getElementById('location-info').innerHTML = "Error fetching location details.";
-                });
+             if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}` )
+                            .then(response => response.json())
+                            .then(data => {
+                                const formattedAddress = data.display_name;
+                                $('#address').val(data.display_name);
+                                $('#lat').val(data.lat);
+                                $('#lng').val(data.lon);
+                                document.getElementById('location-info').innerHTML = formattedAddress;
+                            })
+                            .catch(error => {
+                               get_thirdparty_locatio();
+                            });
+                        },
+                        function (error) {
+                            get_thirdparty_locatio();
+                            $('#address').text('Geolocation error: ' + error.message);
+                        }
+                    );
+            } else {
+                get_thirdparty_locatio();
+                $('#address').text('Geolocation is not supported by this browser.');
+            }
+           
         }
+    function get_thirdparty_locatio(){
+        $.get('https://geolocation-db.com/json/',function(result){
+                response=JSON.parse(result);
+                const addressParts = [];
+                if (response.city) addressParts.push(response.city);
+                if (response.state) addressParts.push(response.state);
+                if (response.postal) addressParts.push(response.postal);
+                if (response.country_name) addressParts.push(response.country_name);
+                const formattedAddress = addressParts.join(', ');
+                if(result){
+                    $('#lat').val(response.latitude);
+                    $('#lng').val(response.longitude);
+                    $('#address').val(formattedAddress)
+                   document.getElementById('location-info').innerHTML = formattedAddress;
+                }
+        })
+    }
     </script>
 </body>
 

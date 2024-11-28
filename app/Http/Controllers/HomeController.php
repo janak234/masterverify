@@ -38,12 +38,12 @@ class HomeController extends Controller
     {
         $code = BatchProduct::with('product','batch')->where('code',$request->code)->first();
         $location = array();
-                if($request->address){
-                    $location['address'] = $request->address;
-                    $location['lat'] = $request->lat;
-                    $location['lng'] = $request->lng;
-                }
-        if(isset($location)){
+        if($request->address){
+            $location['address'] = $request->address;
+            $location['lat'] = $request->lat;
+            $location['lng'] = $request->lng;
+        }
+        if(empty($location)){
             $aloc = null;
         }else{
             $aloc = serialize($location);
