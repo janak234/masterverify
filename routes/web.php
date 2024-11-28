@@ -59,6 +59,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/admin/getlist', [RoleController::class, 'getlist'])->name('rolelist');
         Route::get('/admin/permission/{id}', [RoleController::class, 'permission'])->name('permission');
         Route::put('/admin/permission_update', [RoleController::class, 'permission_update'])->name('permission_update');
+        Route::match(['get','post'],'/admin/change-password', [LoginController::class, 'change_password'])->name('admin-change-password');
     });
 });
 //frontpages

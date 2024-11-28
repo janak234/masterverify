@@ -16,12 +16,15 @@
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-user">
                     {{-- <a class="dropdown-item" href="page-profile.html"><i class="mr-50" data-feather="user"></i>
                         Profile</a> --}}
+                     <a class="dropdown-item" href="{{ route('admin-change-password') }}"><i
+                            class="mr-50" data-feather="key"></i>Change Password</a>    
                     <a class="dropdown-item" href="{{ route('logout') }}"
                         onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"><i
                             class="mr-50" data-feather="power"></i> Logout</a>
                     <form id="frm-logout" action="{{ route('logout') }}" method="POST" style="display: none;">
                         {{ csrf_field() }}
                     </form>
+                   
                 </div>
             </li>
         </ul>
