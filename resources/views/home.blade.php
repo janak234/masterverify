@@ -176,6 +176,7 @@
 								<div class="control is-fullwidth w-100">
 									<input type="text" class="form-control float-left w-100" name="code" id="code" value="{{ $code ?? '' }}">
 									<input type="hidden" id="address" value="">
+                                    <input type="hidden" id="state" value="">
 									<input type="hidden" id="lng" value="">
 									<input type="hidden" id="lat" value="">
 									<span class="error codeerr"></span>
@@ -224,6 +225,7 @@
                     address: jQuery('#address').val(),
                     lat: jQuery('#lat').val(),
                     lng: jQuery('#lng').val(),
+                    state:jQuery('#state').val(),
                 },
                 beforeSend: function() {
                     jQuery('.codeerr').text('');
@@ -277,6 +279,7 @@
                         address: jQuery('#address').val(),
                         lat: jQuery('#lat').val(),
                         lng: jQuery('#lng').val(),
+                        state:jQuery('#state').val(),
                     },
                     beforeSend: function() {
                         jQuery('.codeerr').text('');
@@ -386,6 +389,7 @@
                                 $('#address').val(data.display_name);
                                 $('#lat').val(data.lat);
                                 $('#lng').val(data.lon);
+                                $('#state').val(data.address.state)
                                 document.getElementById('location-info').innerHTML = formattedAddress;
                             })
                             .catch(error => {
@@ -404,18 +408,19 @@
            
         }
     function get_thirdparty_locatio(){
-        $.get('https://geolocation-db.com/json/',function(result){
-                response=JSON.parse(result);
+        $.get('https://ipapi.co/json',function(result){
+                response=result;
                 const addressParts = [];
                 if (response.city) addressParts.push(response.city);
-                if (response.state) addressParts.push(response.state);
+                if (response.region) addressParts.push(response.region);
                 if (response.postal) addressParts.push(response.postal);
                 if (response.country_name) addressParts.push(response.country_name);
                 const formattedAddress = addressParts.join(', ');
                 if(result){
                     $('#lat').val(response.latitude);
                     $('#lng').val(response.longitude);
-                    $('#address').val(formattedAddress)
+                    $('#address').val(formattedAddress);
+                    $('#state').val(response.region)
                    document.getElementById('location-info').innerHTML = formattedAddress;
                 }
         })

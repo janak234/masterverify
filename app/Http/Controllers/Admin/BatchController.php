@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use PDF;
 use App\Exports\UsersExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\ToArray;
 
 class BatchController extends Controller
 {
@@ -137,27 +138,47 @@ class BatchController extends Controller
             // 'prefix' => 'required',
             // 'manufacturing' => 'required',
             // 'expiry' => 'required',
-            'no_code'=> 'required',
+            'no_code' => 'required_without:excel_file',
+            'excel_file' => 'required_without:no_code|file|mimes:xls,xlsx,csv|max:2048', 
             'products' => 'required',
         ]);
         try {
+            if ($request->hasFile('excel_file')) {
+                $file = $request->file('excel_file');
+                $data = Excel::toArray(new class implements ToArray {
+                    public function array(array $array)
+                    {
+                        return $array;
+                    }
+                }, $file);
+                $codes=$data[0];
+                $icodes=array_column(array_slice($codes, 1), 0);
+            }
             $batch = Batch::create([
                 'prefix' => $request->prefix,
                 'manufacturing' => $request->manufacturing,
                 'expiry' => $request->expiry,
             ]);
             if ($request->products) {
-                //foreach ($request->products as $key => $product) {
+                if(isset($icodes) && $request->hasFile('excel_file')){
+                    foreach ($icodes as $key => $value) {
+                        BatchProduct::create([
+                            'batch_id' => $batch->id,
+                            'product_id' => $request->products,
+                            'code' => $value,
+                        ]);
+                    };    
+                }else{
                     $count = $request->no_code;
                     for ($i = 1; $i <= $count; $i++) {
                         $code = $this->generateUniqueCode();
                         BatchProduct::create([
                             'batch_id' => $batch->id,
                             'product_id' => $request->products,
-                            'code' => $code,
+                            'code' => $request->prefix.$request->products.$code,
                         ]);
-                    }
-                //}
+                    }    
+                }
             }
             request()->session()->flash('flash_success', 'Product Created successfully.');
             return redirect()->route('batch.index');
@@ -288,6 +309,19 @@ class BatchController extends Controller
                 $user->is_active = 1;
                 $user->save();
             }
+        }
+    }
+    public function import_code(Request $request){
+        if ($request->hasFile('excel_file')) {
+            $file = $request->file('excel_file');
+            $data = Excel::toArray(new class implements ToArray {
+                public function array(array $array)
+                {
+                    return $array;
+                }
+            }, $file);
+            return $data[0];
+            return response()->json(['success' => 'File uploaded successfully.']);
         }
     }
 }

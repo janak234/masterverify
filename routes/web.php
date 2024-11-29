@@ -39,7 +39,7 @@ Auth::routes([
 Route::group(['middleware' => 'auth'], function () {
     Route::namespace ('Admin')->group(function () {
         Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+        Route::get('/admin/get_state_wise', [DashboardController::class, 'get_state_wise'])->name('get_state_wise');
         Route::resource('/admin/users', 'UserController');
 
         Route::get('/admin/getusers', [UserController::class, 'getusers'])->name('getusers');
@@ -55,6 +55,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/admin/getbatchpro', [BatchController::class, 'getbatchpro'])->name('getbatchpro');
         Route::get('/admin/getbatch/{id}', [BatchController::class, 'getbatchpdf'])->name('getbatchpdf');
         Route::get('/admin/loadMore', [BatchController::class, 'loadMore'])->name('loadMore');
+        Route::post('/admin/import_code', [BatchController::class, 'import_code'])->name('import_code');
         Route::resource('/admin/roles', 'RoleController');
         Route::get('/admin/getlist', [RoleController::class, 'getlist'])->name('rolelist');
         Route::get('/admin/permission/{id}', [RoleController::class, 'permission'])->name('permission');

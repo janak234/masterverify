@@ -49,7 +49,6 @@ class HomeController extends Controller
             $aloc = serialize($location);
         }
         if($code){
-
             $data = array(
                 'image'=>$code->product->image,
                 'name'=>$code->product->name,
@@ -62,12 +61,14 @@ class HomeController extends Controller
             if($code->is_verified == 1){
                 return response()->json(['msg' => 'Product Alredy Verified','success'=>'1' ,'is_verified'=>$code->is_verified,'data'=>$data]);
             }else{
-
                 BatchProduct::where('id', $code->id)
                 ->update([
                     'is_verified' => 1,
                     'ip_address' => $request->ip(),
                     'location' => $aloc,
+                    'state' => $request->state?$request->state:null,
+                    'lat' => $request->lat?$request->lat:null,
+                    'lng' => $request->lng?$request->lng:null,
                 ]);
                 return response()->json(['msg' => 'Product Verified','success'=>'1','is_verified'=>$code->is_verified,'data'=>$data]);
             }

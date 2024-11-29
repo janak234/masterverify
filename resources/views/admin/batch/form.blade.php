@@ -51,7 +51,7 @@
                                                 @endif
                                             </div>
 
-                                            <div class="form-group col-md-3">
+                                            <div class="form-group col-md-2">
                                                 <label class="form-label" for="type">Manufacturing Date</label>
                                                 <input type="date" name="manufacturing" id="manufacturing"
                                                     class="form-control @if($errors->has('manufacturing')) error @endif"
@@ -64,7 +64,7 @@
                                             </div>
 
 
-                                            <div class="form-group col-md-3">
+                                            <div class="form-group col-md-2">
                                                 <label class="form-label" for="expiry">Expiry Date</label>
                                                 <input type="date" name="expiry"
                                                     class="form-control @if($errors->has('expiry')) error @endif"
@@ -75,7 +75,7 @@
                                                     for="expiry">{{ $errors->first('expiry') }}</label>
                                                 @endif
                                             </div>
-                                            <div class="form-group col-md-3">
+                                            <div class="form-group col-md-2">
                                                 <label class="form-label" for="no_code"> No of Codes </label>
                                                 <input type="number" name="no_code"
                                                     class="form-control @if($errors->has('no_code')) error @endif"
@@ -86,26 +86,29 @@
                                                     for="no_code">{{ $errors->first('no_code') }}</label>
                                                 @endif
                                             </div>
+                                            <div class="form-group col-md-3">
+                                                <input class="form-control dt-input" type="file" name="excel_file" id="excel_file" accept="xls,.xlsx,.csv">
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <div class="form-group col-md-12">
                                             <label class="form-label">Select Product</label>
-<style>
-.form-control.c {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 25px;
-	height: 25px;
-}.card-body label {
-	display: none;
-}.card-body .qt {
-	display: none;
-}
-.col-md-3 .card .card-title {
-	margin-bottom:0;
-}
-</style>
+                                            <style>
+                                            .form-control.c {
+                                            	position: absolute;
+                                            	top: 0;
+                                            	right: 0;
+                                            	width: 25px;
+                                            	height: 25px;
+                                            }.card-body label {
+                                            	display: none;
+                                            }.card-body .qt {
+                                            	display: none;
+                                            }
+                                            .col-md-3 .card .card-title {
+                                            	margin-bottom:0;
+                                            }
+                                            </style>
                                         @if($errors->has('products'))
                                         <label id="products-error" class="error"
                                             for="products">{{ $errors->first('products') }}</label>
@@ -149,6 +152,26 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="excel_import" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Import Code</h5>
+      </div>
+      <form method="POST" action="{{route('import_code')}}" enctype="multipart/form-data" id="uploadForm">
+      @csrf 
+      <div class="modal-body">
+        <label>Import Code From Excel</label>
+        <input class="form-control dt-input" type="file" name="excel_file" id="excel_file" accept="xls,.xlsx,.csv" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary dismiss" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 @section('script')
 <script>
@@ -168,6 +191,7 @@
                 }
             });
         });
+
     });
 
 </script>
