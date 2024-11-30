@@ -146,7 +146,7 @@
       });
     </script>
     <script>
-    const map = L.map('map').setView([0,0], 2); 
+    const map = L.map('map').setView([37.0902, -95.7129], 4);; 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(map);

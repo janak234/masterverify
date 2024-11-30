@@ -152,7 +152,10 @@ class BatchController extends Controller
                     }
                 }, $file);
                 $codes=$data[0];
-                $icodes=array_column(array_slice($codes, 1), 0);
+                $icodes=array_filter(array_column(array_slice($codes, 1), 0));
+            }
+            if(empty($icodes)){
+                request()->session()->flash('flash_error', 'Somthing went wrong please try again.');   
             }
             $batch = Batch::create([
                 'prefix' => $request->prefix,
