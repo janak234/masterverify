@@ -1,5 +1,17 @@
 @extends('admin.layouts.app')
 @section('content')
+<style>
+    /* Custom Animation */
+    .modal.fade .modal-dialog {
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.3s ease-in-out;
+    }
+    .modal.show .modal-dialog {
+      transform: scale(1);
+      opacity: 1;
+    }
+  </style>
  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <div class="app-content content ">
     <div class="content-overlay"></div>
@@ -91,6 +103,7 @@
                                             <th>ID</th>
                                             <th>State</th>
                                             <th>No OF Verify</th>
+                                            <th>View</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -106,6 +119,34 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <table class="dt-advanced-search table" id="detail-table">
+              <thead>
+                  <tr>
+                      <th>ID</th>
+                      <th>Brand</th>
+                      <th>Strain</th>
+                      <th>No of Scan</th>
+                  </tr>
+              </thead>
+              <tbody class="detail-body">
+                
+              </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 @endsection
 @section('script')
 <link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/buttons.bootstrap4.min.css') }}" rel="stylesheet">
@@ -131,7 +172,7 @@
               }
           });
       });
-        var oTable = $('#users-table').DataTable({
+      var oTable = $('#users-table').DataTable({
           processing: true,
           serverSide: true,
           ajax: {
@@ -141,8 +182,59 @@
               {data: 'DT_RowIndex', name: 'DT_RowIndex'},
               {data: 'state', name: 'state'},
               {data: 'product_count', name: 'product_count'},
+              {data: 'action', name: 'action', orderable: false, searchable: false}
           ]
 
+      });
+      $('#select_brand').on('draw.dt', function () {
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+      });
+      // $(document).on('click','.view_detail',function(){
+      //   state=$(this).attr('id');
+      //   $('#exampleModalLabel').text(state?state:'Unknown');
+      //   $('.detail-body').empty();
+      //   $.get("{{route('get_state_wise_detail')}}",{state:state},function(result){
+      //       if(result){
+      //         $.each(result, function(index, item) {
+      //             var row = '<tr>';
+      //             row += '<td>' + (index+1) + '</td>';
+      //             row += '<td>' + item.brand + '</td>';
+      //             row += '<td>' + item.name + '</td>';
+      //             row += '<td>' + item.count + '</td>';
+      //             row += '</tr>';
+      //             $('.detail-body').append(row);
+      //         });
+      //         $('#detail-table').DataTable();
+      //       }
+      //   });
+      //   $('#exampleModal').modal('show');
+      // })
+      $(document).on('click', '.view_detail', function() {
+          if ($.fn.dataTable.isDataTable('#detail-table')) {
+            $('#detail-table').DataTable().clear().destroy();
+          }
+            var state = $(this).attr('id');
+            $('#exampleModalLabel').text(state?state:'Unknown');
+            var table = $('#detail-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('get_state_wise_detail') }}",
+                    type: "GET",
+                    data: function(d) {
+                        d.state = state;
+                    }
+                },
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex' },
+                    { data: 'brand', name: 'brand' },
+                    { data: 'name', name: 'name' },
+                    { data: 'count', name: 'count' }
+                ]
+            });
+            $('#exampleModal').modal('show');
       });
     </script>
     <script>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\BatchProduct;
 use DataTables;
+use DB;
 class DashboardController extends Controller
 {
     public function index(Request $request)
@@ -38,12 +39,30 @@ class DashboardController extends Controller
         });      
         return view('admin.dashboard',compact('result','brands','metrix'));
     }
-    public function get_state_wise(Request $Request){
-        $states=BatchProduct::selectRaw('state, COUNT(*) as product_count')->where('is_verified',1)
-                    ->groupBy('state')
-                    ->get();  
-        return Datatables::of($states)->addIndexColumn()->editColumn('state', function ($state) {
-                return $state->state?$state->state:'Unknown';
-            })->make(true);      
+    public function get_state_wise(Request $request){
+        if($request->ajax()){
+            $states=BatchProduct::selectRaw('state, COUNT(*) as product_count')->where('is_verified',1)
+                        ->groupBy('state')
+                        ->get();  
+            return Datatables::of($states)->addIndexColumn()->editColumn('state', function ($state) {
+                    return $state->state?$state->state:'Unknown';
+                })->addColumn('action', function ($state) {
+                return '<a data-toggle="tooltip" data-placement="top" data-original-title="Edit" href="javascript:void(0)" class="btn btn-icon btn-outline-primary waves-effect view_detail" id="'.$state->state.'">
+                        <i class="ficon" data-feather="eye"></i>
+                    </a>';
+            })->rawColumns(['action',])->make(true);   
+        }   
+    }
+    public function get_state_wise_detail(Request $request){
+        if($request->ajax()){
+           $result = BatchProduct::select('name', 'brand', DB::raw('count(*) as count'))
+                    ->join('products', 'products.id', '=', 'batch_products.product_id')
+                    ->where('is_verified', 1)
+                    ->where('state', $request->state)
+                    ->groupBy('name', 'brand')
+                    ->get();
+            return Datatables::of($result)->addIndexColumn()->make(true);
+        }          
+
     }
 }
