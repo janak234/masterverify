@@ -277,19 +277,47 @@
       });
     </script>
     <script>
-    const map = L.map('map').setView([37.0902, -95.7129], 4);; 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
-    states.forEach(state => {
-      L.circleMarker([state.lat, state.lon], {
-        radius: state.metric,
-        fillColor: 'blue',
-        color: 'blue',
-        weight: 1,
-        fillOpacity: 0.6,
-      })
-      .bindPopup(`${state.name}: Metric = ${state.metric}`).addTo(map);
-    });
+        var map = L.map('map').setView([37.8, -96], 4);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        var stateData = states;
+        $.getJSON('{{url("/")}}/us-states.json', function(geojsonData) {
+            geojsonData.features.forEach(function(feature) {
+                var stateName = feature.properties.name;
+                var stateValue = stateData.find(item => item.name === stateName)?.metric;
+                feature.properties.value = stateValue || 0;
+            });
+            function style(feature) {
+                return {
+                    fillColor: getColor(feature.properties.value),
+                    weight: 1,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.7
+                };
+            }
+
+            function getColor(value) {
+                return value > 100 ? '#800026' :
+                       value > 50  ? '#BD0026' :
+                       value > 25  ? '#E31A1C' :
+                       value > 10  ? '#FC4E2A' :
+                       value > 5   ? '#FD8D3C' :
+                       value > 0   ? '#FEB24C' :
+                                     '#FFEDA0';
+            }
+            L.geoJSON(geojsonData, { style: style }).addTo(map);
+            function onEachFeature(feature, layer) {
+                if (feature.properties && feature.properties.name) {
+                    layer.bindPopup("<strong>" + feature.properties.name + "</strong><br>Value: " + feature.properties.value);
+                }
+            }
+            L.geoJSON(geojsonData, {
+                style: style,
+                onEachFeature: onEachFeature
+            }).addTo(map);
+        });
   </script>
 @endsection

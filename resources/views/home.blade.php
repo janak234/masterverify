@@ -166,7 +166,7 @@
         <div class="container pt-md-1 pb-md-4">
             <div class="row">
                 <div id="show-product-details">
-                    <p class="response_msg"></p>
+                    <p class="response_msg" style="text-align: center;"></p>
                 </div>
                 <div class="col-xl-11 mx-auto">
                     <h1 class="bd-title mt-0">Verify Product</h1>
@@ -242,19 +242,18 @@
                 complete: function() {},
                 success: function(json) {
                     if (json.success) {
-                        $('#show-product-details').append('<p>' + json.msg + '</p>');
+                        $('#show-product-details').append('<p style="text-align:center;">' + json.msg + '</p>');
                         //if (json.is_verified == 0) {
                         $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="{{url("/")}}/'+json.data.image+'"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
                         //}
                     } else {
-                        $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
                         $('#show-product-details').append(`<div class="container my-alert">
                                                                 <div class="invalid-box bg-white text-dark text-center">
                                                                     <img src="/assets/images/red-alert.svg" class="my-alert-icon" >
                                                                     <div class="my-2">
                                                                         <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
                                                                     </div>
-                                                                    <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p>
+                                                                    <p class="m-0"><b>`+json.msg+`</b></p>
                                                                 </div>
                                                             </div>`);
                     }
@@ -430,10 +429,9 @@
                     success: function(json) {
                         if (json.success) {
                             console.log(json.msg)
-                            $('.response_msg').text(json.msg);
+                            $('.response_msg').html(json.msg);
                         } else {
-                            $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
-                            $('#show-product-details').append(`<div class="container my-alert"> <div class="invalid-box bg-white text-dark text-center"> <img src="/assets/images/red-alert.svg" class="my-alert-icon" > <div class="my-2"> <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2> </div> <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p> </div> </div>`);
+                            $('#show-product-details').append(`<div class="container my-alert"> <div class="invalid-box bg-white text-dark text-center"> <img src="/assets/images/red-alert.svg" class="my-alert-icon" > <div class="my-2"> <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2> </div> <p class="m-0"><b>`+json.msg+`</b></p> </div> </div>`);
                         }
                     }
                 });

@@ -29,7 +29,9 @@ class HomeController extends Controller
         if ($request->isMethod('get') && $request->code != '' && $request->code) {
             $code =  $request->code;
             $data = BatchProduct::with('product','batch')->where('code',$request->code)->first();
-            $product = array(
+            $product=[];
+            if($data){
+              $product = array(
                 'image'=>$data->product->image,
                 'name'=>$data->product->name,
                 'weight'=>$data->product->weight,
@@ -37,7 +39,8 @@ class HomeController extends Controller
                 'type'=>$data->product->type,
                 'manufacturing'=>$data->batch->manufacturing?date('m/d/Y',strtotime($data->batch->manufacturing)):'',
                 'expiry'=>$data->batch->expiry?date('m/d/Y',strtotime($data->batch->expiry)):'',
-            );
+               );      
+            }
             return view('home',compact('code','product'));
         }else{
             return view('home');
@@ -69,7 +72,7 @@ class HomeController extends Controller
                 'expiry'=>$code->batch->expiry?date('m/d/Y',strtotime($code->batch->expiry)):'',
             );
             if($code->is_verified == 1){
-                return response()->json(['msg' => 'Product Alredy Verified','success'=>'1' ,'is_verified'=>$code->is_verified,'data'=>$data]);
+                return response()->json(['msg' => 'The code you have entered has previously been verified, our verification codes are for single use only. You might have a counterfeit product, please consult your sales representative. <br/>Thank you for using MasterVerify.com','success'=>'1' ,'is_verified'=>$code->is_verified,'data'=>$data]);
             }else{
                 BatchProduct::where('id', $code->id)
                 ->update([
@@ -83,11 +86,11 @@ class HomeController extends Controller
                     'lat' => $request->lat?$request->lat:null,
                     'lng' => $request->lng?$request->lng:null,
                 ]);
-                return response()->json(['msg' => 'Product Verified','success'=>'1','is_verified'=>$code->is_verified,'data'=>$data]);
+                return response()->json(['msg' => 'Congratulation you have purchased a valid '.$code->product->brand.' product. Please enjoy responsibly. <br>Thank you for using MasterVerify.com','success'=>'1','is_verified'=>$code->is_verified,'data'=>$data]);
             }
 
         }else{
-            return response()->json(['error' => '1','msg'=>'No product forund']);
+            return response()->json(['error' => '1','msg'=>'Unfortunately, the code you have entered does not match our system. You might have a counterfeit product, please consult your sales representative.<br/> Thank you for using MasterVerify.com']);
         }
     }
 
