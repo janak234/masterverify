@@ -35,8 +35,8 @@ class HomeController extends Controller
                 'weight'=>$data->product->weight,
                 'brand'=>$data->product->brand,
                 'type'=>$data->product->type,
-                'manufacturing'=>$data->batch->manufacturing,
-                'expiry'=>$data->batch->expiry,
+                'manufacturing'=>$data->batch->manufacturing?date('m/d/Y',strtotime($data->batch->manufacturing)):'',
+                'expiry'=>$data->batch->expiry?date('m/d/Y',strtotime($data->batch->expiry)):'',
             );
             return view('home',compact('code','product'));
         }else{
