@@ -78,8 +78,14 @@
                               </div>
                             </div>
                           </div>
-
                         </div>
+                        <br/>
+                        <br/>
+                        <div class="row">
+                          <div class="col-md-12 col-12">
+                            <a href="{{route('export_all_code')}}"><button  type="button" class="btn btn-success"><i data-feather="file-text"></i>&nbsp;Export All Verified Code</button></a>
+                          </div>
+                        </div>  
                       </div>
                     </div>
                   </div>
@@ -183,13 +189,14 @@
               {data: 'state', name: 'state'},
               {data: 'product_count', name: 'product_count'},
               {data: 'action', name: 'action', orderable: false, searchable: false}
-          ]
+          ],
+          drawCallback: function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+          }
 
-      });
-      $('#select_brand').on('draw.dt', function () {
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
       });
       // $(document).on('click','.view_detail',function(){
       //   state=$(this).attr('id');

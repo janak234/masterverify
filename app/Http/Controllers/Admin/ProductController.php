@@ -38,7 +38,7 @@ class ProductController extends Controller
         })
 
         ->editColumn('created_at', function ($user){
-            return date('d/m/Y', strtotime($user->created_at) );
+            return date('m/d/Y', strtotime($user->created_at) );
         })
         ->addColumn('image', function ($user){
             if($user->image){
@@ -78,7 +78,7 @@ class ProductController extends Controller
             })
             ->editColumn('updated_at', function ($user) {
                 if($user->is_verified){
-                    return date('d/m/Y H:i:s', strtotime($user->updated_at));
+                    return date('m/d/Y H:i:s', strtotime($user->updated_at));
                 }else{
                     return '-';
                 }

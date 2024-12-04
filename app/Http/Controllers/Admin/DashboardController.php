@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\BatchProduct;
 use DataTables;
 use DB;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 class DashboardController extends Controller
 {
     public function index(Request $request)
@@ -63,6 +65,26 @@ class DashboardController extends Controller
                     ->get();
             return Datatables::of($result)->addIndexColumn()->make(true);
         }          
+    }
+    public function export_all_code(Request $request){
+        $codes=BatchProduct::select('ip_address','code','name','type','brand','weight','city','state','country','zip_code')->join('products', 'products.id', '=', 'batch_products.product_id')->where('is_verified', 1)->get();
+        return Excel::download(new class($codes) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+            private $codes;
 
+            public function __construct(Collection $codes)
+            {
+                $this->codes = $codes;
+            }
+
+            public function collection()
+            {
+                return $this->codes;
+            }
+
+            public function headings(): array
+            {
+                return ['Ip','Code','Name','Type','Brand','Weight','City','State','Country','Zip Code'];
+            }
+        }, 'verified_codes.xlsx');
     }
 }

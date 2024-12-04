@@ -47,11 +47,14 @@ class BatchController extends Controller
             ->addColumn('action', function ($user) {
                 return '<div class="actionsec"><a data-toggle="tooltip" data-placement="top" data-original-title="View Batch" href="' . route('batch.show', $user->id) . '" class="btn btn-icon btn-outline-primary waves-effect"><i data-feather="eye"></i></a> <a data-toggle="tooltip" data-placement="top" data-original-title="Export" href="' . route('getbatchpdf', $user->id) . '" class="btn btn-icon btn-outline-primary waves-effect"><i data-feather="file-text"></i></a><a data-toggle="tooltip" data-placement="top" data-original-title="Delete" title="Delete" data-method="delete" data-alert="Are you sure want to delete?" href="' . route('batch.destroy', $user->id) . '" class="jquery-postback btn btn-icon btn-outline-primary waves-effect"><i data-feather="trash"></i></a></div>';
             })
-
-
-
+            ->editColumn('manufacturing', function ($user) {
+                return $user->manufacturing?date('m/d/Y',strtotime($user->manufacturing)):'';
+            })
+            ->editColumn('expiry', function ($user) {
+                return $user->expiry?date('m/d/Y',strtotime($user->expiry)):'';
+            })
             ->editColumn('created_at', function ($user) {
-                return $user->created_at;
+                return date('m/d/Y',strtotime($user->created_at));
             })
             ->filter(function ($query) use ($request) {
                 if ($request->has('firstname')) {
@@ -74,7 +77,7 @@ class BatchController extends Controller
             })
             ->editColumn('updated_at', function ($user) {
                 if($user->is_verified){
-                    return date('d/m/Y H:i:s', strtotime($user->updated_at));
+                    return date('m/d/Y H:i:s', strtotime($user->updated_at));
                 }else{
                     return '-';
                 }
@@ -133,7 +136,9 @@ class BatchController extends Controller
      */
     public function store(Request $request)
     {
-       // dd($request);
+        if(!$request->products){
+             request()->session()->flash('flash_error', 'Please Select atleast One product.');   
+        }
         $validated = $request->validate([
             // 'prefix' => 'required',
             // 'manufacturing' => 'required',
@@ -154,7 +159,7 @@ class BatchController extends Controller
                 $codes=$data[0];
                 $icodes=array_filter(array_column(array_slice($codes, 1), 0));
             }
-            if(empty($icodes)){
+            if(empty($icodes) && !$request->no_code){
                 request()->session()->flash('flash_error', 'Somthing went wrong please try again.');   
             }
             $batch = Batch::create([
@@ -183,7 +188,7 @@ class BatchController extends Controller
                     }    
                 }
             }
-            request()->session()->flash('flash_success', 'Product Created successfully.');
+            request()->session()->flash('flash_success', 'Batch Created successfully.');
             return redirect()->route('batch.index');
         } catch (QueryException $e) {
             request()->session()->flash('flash_error', 'Somthing went wrong please try again.');

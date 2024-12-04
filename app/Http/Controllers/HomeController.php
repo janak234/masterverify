@@ -28,7 +28,17 @@ class HomeController extends Controller
     {
         if ($request->isMethod('get') && $request->code != '' && $request->code) {
             $code =  $request->code;
-            return view('home',compact('code'));
+            $data = BatchProduct::with('product','batch')->where('code',$request->code)->first();
+            $product = array(
+                'image'=>$data->product->image,
+                'name'=>$data->product->name,
+                'weight'=>$data->product->weight,
+                'brand'=>$data->product->brand,
+                'type'=>$data->product->type,
+                'manufacturing'=>$data->batch->manufacturing,
+                'expiry'=>$data->batch->expiry,
+            );
+            return view('home',compact('code','product'));
         }else{
             return view('home');
         }
@@ -66,7 +76,10 @@ class HomeController extends Controller
                     'is_verified' => 1,
                     'ip_address' => $request->ip(),
                     'location' => $aloc,
+                    'city' => $request->city?$request->city:null,
                     'state' => $request->state?$request->state:null,
+                    'country' => $request->country?$request->country:null,
+                    'zip_code' => $request->zip_code?$request->zip_code:null,
                     'lat' => $request->lat?$request->lat:null,
                     'lng' => $request->lng?$request->lng:null,
                 ]);

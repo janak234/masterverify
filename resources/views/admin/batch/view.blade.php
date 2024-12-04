@@ -35,11 +35,11 @@
                                             <div class="form-row mb-1">
                                                 <div class="col-lg-4">
                                                     <label>Manufacturing Date:</label>
-                                                    <p>{{$batch->manufacturing}}</p>
+                                                    <p>{{$batch->manufacturing?date('m/d/Y',strtotime($batch->manufacturing)):''}}</p>
                                                 </div>
                                                 <div class="col-lg-4">
                                                     <label>Expiry Date:</label>
-                                                    <p>{{$batch->expiry}}</p>
+                                                    <p>{{$batch->expiry?date('m/d/Y',strtotime($batch->expiry)):''}}</p>
                                                 </div>
 
                                             </div>

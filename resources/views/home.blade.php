@@ -166,6 +166,7 @@
         <div class="container pt-md-1 pb-md-4">
             <div class="row">
                 <div id="show-product-details">
+                    <p class="response_msg"></p>
                 </div>
                 <div class="col-xl-11 mx-auto">
                     <h1 class="bd-title mt-0">Verify Product</h1>
@@ -176,7 +177,10 @@
 								<div class="control is-fullwidth w-100">
 									<input type="text" class="form-control float-left w-100" name="code" id="code" value="{{ $code ?? '' }}">
 									<input type="hidden" id="address" value="">
+                                    <input type="hidden" id="city" value="">
                                     <input type="hidden" id="state" value="">
+                                    <input type="hidden" id="country" value="">
+                                    <input type="hidden" id="zip_code" value="">
 									<input type="hidden" id="lng" value="">
 									<input type="hidden" id="lat" value="">
 									<span class="error codeerr"></span>
@@ -225,7 +229,10 @@
                     address: jQuery('#address').val(),
                     lat: jQuery('#lat').val(),
                     lng: jQuery('#lng').val(),
+                    city:jQuery('#city').val(),
                     state:jQuery('#state').val(),
+                    country:jQuery('#country').val(),
+                    zip_code:jQuery('#zip_code').val(),
                 },
                 beforeSend: function() {
                     jQuery('.codeerr').text('');
@@ -237,7 +244,7 @@
                     if (json.success) {
                         $('#show-product-details').append('<p>' + json.msg + '</p>');
                         //if (json.is_verified == 0) {
-                        $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="https://masterverify.net/product/1519286376PAPAYA-TANGiE%202.0.jpg"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
+                        $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="{{url("/")}}/'+json.data.image+'"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
                         //}
                     } else {
                         $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
@@ -259,56 +266,11 @@
     <script>
         jQuery(document).ready(function() {
             askForLocationPermission();
-            <?php if(isset($code) && $code && !empty($code)) { ?> 
-                var code = jQuery('#code').val();
-                if (code == '') {
-                    jQuery('.codeerr').text('Please Enter Code');
-                    return;
-                }
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-                jQuery.ajax({
-                    url: "{{route('verify')}}",
-                    type: 'post',
-                    dataType: 'json',
-                    data: {
-                        code: jQuery('#code').val(),
-                        address: jQuery('#address').val(),
-                        lat: jQuery('#lat').val(),
-                        lng: jQuery('#lng').val(),
-                        state:jQuery('#state').val(),
-                    },
-                    beforeSend: function() {
-                        jQuery('.codeerr').text('');
-                        $('#show-product-details').empty('');
-                        $('.or').remove()
-                    },
-                    complete: function() {},
-                    success: function(json) {
-                        if (json.success) {
-                            $('#show-product-details').append('<p>' + json.msg + '</p>');
-                            //if (json.is_verified == 0) {
-                                $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="https://masterverify.net/product/1519286376PAPAYA-TANGiE%202.0.jpg"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + json.data.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + json.data.manufacturing + '</li><li class="list-group-item">Expiry Date : ' + json.data.expiry + '</li><li class="list-group-item">Product type : ' + json.data.type + '</li><li class="list-group-item">Weight : ' + json.data.weight + '</li><li class="list-group-item">Brand : ' + json.data.brand + '</li></ul></div></div></div>');
-                            //}
-                        } else {
-                            $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
-                            $('#show-product-details').append(`<div class="container my-alert">
-                                                                <div class="invalid-box bg-white text-dark text-center">
-                                                                    <img src="/assets/images/red-alert.svg" class="my-alert-icon" >
-                                                                    <div class="my-2">
-                                                                        <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2>
-                                                                    </div>
-                                                                    <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p>
-                                                                </div>
-                                                            </div>`);
-                        }
-                    }
-                });
+            <?php if(isset($product) && $product && !empty($product)) { ?> 
+                var product = @json($product);
+                 $('#show-product-details').append('<div class="or"><div class="card row"><div class="col-md-6 col-sm-12"><img class="card-img-top" src="{{url("/")}}/'+product.image+'"></div><div class="col-md-6 col-sm-6"><div class="card-body"><h5 class="card-title m-0">' + product.name + '</h5></div><ul class="list-group list-group-flush"><li class="list-group-item">Manufacturing Date : ' + (product.manufacturing?product.manufacturing:"N/A") + '</li><li class="list-group-item">Expiry Date : ' + (product.expiry?product.expiry:'N/A') + '</li><li class="list-group-item">Product type : ' + product.type + '</li><li class="list-group-item">Weight : ' + product.weight + '</li><li class="list-group-item">Brand : ' + product.brand + '</li></ul></div></div></div>');
             <?php } ?>
-
+          
         });
 
         function askForLocationPermission() {
@@ -389,8 +351,12 @@
                                 $('#address').val(data.display_name);
                                 $('#lat').val(data.lat);
                                 $('#lng').val(data.lon);
+                                $('#city').val(data.address.city)
                                 $('#state').val(data.address.state)
+                                $('#country').val(data.address.country)
+                                $('#zip_code').val(data.address.postcode)
                                 document.getElementById('location-info').innerHTML = formattedAddress;
+                                code_define();
                             })
                             .catch(error => {
                                get_thirdparty_locatio();
@@ -407,23 +373,71 @@
             }
            
         }
-    function get_thirdparty_locatio(){
-        $.get('https://ipapi.co/json',function(result){
-                response=result;
-                const addressParts = [];
-                if (response.city) addressParts.push(response.city);
-                if (response.region) addressParts.push(response.region);
-                if (response.postal) addressParts.push(response.postal);
-                if (response.country_name) addressParts.push(response.country_name);
-                const formattedAddress = addressParts.join(', ');
-                if(result){
-                    $('#lat').val(response.latitude);
-                    $('#lng').val(response.longitude);
-                    $('#address').val(formattedAddress);
-                    $('#state').val(response.region)
-                   document.getElementById('location-info').innerHTML = formattedAddress;
+        function get_thirdparty_locatio(){
+            $.get('https://ipapi.co/json',function(result){
+                    response=result;
+                    const addressParts = [];
+                    if (response.city) addressParts.push(response.city);
+                    if (response.region) addressParts.push(response.region);
+                    if (response.postal) addressParts.push(response.postal);
+                    if (response.country_name) addressParts.push(response.country_name);
+                    const formattedAddress = addressParts.join(', ');
+                    if(result){
+                        $('#lat').val(response.latitude);
+                        $('#lng').val(response.longitude);
+                        $('#address').val(formattedAddress);
+                        $('#city').val(response.city)
+                        $('#state').val(response.region)
+                        $('#country').val(response.country_name)
+                        $('#zip_code').val(response.postal)
+                       document.getElementById('location-info').innerHTML = formattedAddress;
+                       code_define();
+                    }
+            })
+    }
+    function code_define(){
+         <?php if(isset($code) && $code && !empty($code)) { ?> 
+                var code = jQuery('#code').val();
+                if (code == '') {
+                    jQuery('.codeerr').text('Please Enter Code');
+                    return;
                 }
-        })
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                jQuery.ajax({
+                    url: "{{route('verify')}}",
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        code: jQuery('#code').val(),
+                        address: jQuery('#address').val(),
+                        lat: jQuery('#lat').val(),
+                        lng: jQuery('#lng').val(),
+                        city:jQuery('#city').val(),
+                        state:jQuery('#state').val(),
+                        country:jQuery('#country').val(),
+                        zip_code:jQuery('#zip_code').val(),
+                    },
+                    beforeSend: function() {
+                        jQuery('.codeerr').text('');
+                        //$('#show-product-details').empty('');
+                        //$('.or').remove()
+                    },
+                    complete: function() {},
+                    success: function(json) {
+                        if (json.success) {
+                            console.log(json.msg)
+                            $('.response_msg').text(json.msg);
+                        } else {
+                            $('#show-product-details').append('<p classs="text-danger">' + json.msg + '</p>');
+                            $('#show-product-details').append(`<div class="container my-alert"> <div class="invalid-box bg-white text-dark text-center"> <img src="/assets/images/red-alert.svg" class="my-alert-icon" > <div class="my-2"> <h2 >Invalid Serial &nbsp;<i class="icon ion-close-round text-danger"></i></h2> </div> <p class="m-0"><b>This product could not be verified. Please double check that you entered the correct serial number.</b></p> </div> </div>`);
+                        }
+                    }
+                });
+            <?php } ?>
     }
     </script>
 </body>

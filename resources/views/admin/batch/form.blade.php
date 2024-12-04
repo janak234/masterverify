@@ -44,7 +44,7 @@
                                                 <input type="text" name="prefix"
                                                     class="form-control @if($errors->has('prefix')) error @endif"
                                                     placeholder="Prefix Name" aria-label="prefix"
-                                                    value="{{$user->prefix}}">
+                                                    value="{{$user->prefix?$user->prefix:old('prefix')}}">
                                                 @if($errors->has('prefix'))
                                                 <label id="prefix-error" class="error"
                                                     for="prefix">{{ $errors->first('prefix') }}</label>
@@ -80,7 +80,7 @@
                                                 <input type="number" name="no_code"
                                                     class="form-control @if($errors->has('no_code')) error @endif"
                                                     placeholder=" No of Codes " id="no_code" aria-label="no_code"
-                                                    value="" min="1" max="100000">
+                                                    value="{{old('no_code')}}" min="1" max="100000">
                                                 @if($errors->has('no_code'))
                                                 <label id="no_code-error" class="error"
                                                     for="no_code">{{ $errors->first('no_code') }}</label>
@@ -109,30 +109,28 @@
                                             	margin-bottom:0;
                                             }
                                             </style>
-                                        @if($errors->has('products'))
+                                        </div>
+
+                                         <div class="card-datatable">
+                                             @if($errors->has('products'))
                                         <label id="products-error" class="error"
                                             for="products">{{ $errors->first('products') }}</label>
                                         @endif
-                                        </div>
-                                            @foreach ($Products as $Product)
-                                            <div class="col-md-3 col-lg-3 mb-3" >
-                                                <div class="card h-100" >
-                                                  <img class="card-img-top" src="/{{$Product->image}}" alt="{{$Product->name}}" style="height: 200px;object-fit: cover;" onclick="select({{$Product->id}})">
-                                                  <div class="card-body" style="background: #f2f2f2;">
-                                                    <h5 class="card-title">{{$Product->name}}</h5>
-                                                    <input required type="radio" name="products" class="form-control c" id="p{{$Product->id}}" value="{{$Product->id}}" style="margin-bottom: 5px">
-                                                <label for="">No of Codes</label>
-                                                    <input  type="text" name="qty[]" class="form-control qt" value="1" required min="1">
-                                                  </div>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                            <div id="productContainer"></div>
-                                            @if ($Products->hasMorePages())
-                                            <div class="form-group col-md-12">
-                                                <button class="btn btn-secondary" type="button" id="loadMoreBtn">Load More</button>
-                                            </div>
-                                        @endif
+                                <table class="dt-advanced-search table" id="users-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Strain</th>
+                                            <th>Product Image</th>
+                                            <th>Product Size</th>
+                                            <th>Product</th>
+                                            <th>Created At</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>    
+                                        
                                         </div>
                                         <div class="row">
                                             <div class="col-12">
@@ -174,23 +172,74 @@
 </div>
 @endsection
 @section('script')
+<link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+<link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+<link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/responsive.bootstrap4.min.css') }}" rel="stylesheet">
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/datatables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/responsive.bootstrap4.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/datatables.buttons.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/buttons.bootstrap.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/buttons.html5.min.js') }}"></script>
 <script>
     var currentPage = {{ $Products->currentPage() }};
 
     $(document).ready(function() {
-        $('#loadMoreBtn').on('click', function() {
-            currentPage++;
-            $.ajax({
-                url: '{{route('loadMore')}}?page=' + currentPage,
-                type: 'GET',
-                success: function(data) {
-                    $('#productContainer').after(data);
-                    if (!data.trim()) {
-                        $('#loadMoreBtn').hide();
-                    }
-                }
-            });
-        });
+        var oTable = $('#users-table').DataTable({
+        dom: "<'row'<'col-12'<'col-6 f'l><'col-6 p dn'p>>r>"+
+            "<'row'<'col-12't>>"+
+            "<'row'<'col-12 foot'<'col-6 f'i><'col-6 p'p>>>",
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{route('getproducts')}}',
+            data: function (d) {
+                d.firstname = $('input[name=firstname]').val();
+                d.lastname = $('input[name=lastname]').val();
+                d.email = $('input[name=email]').val();
+            }
+        },
+        columns: [
+            {
+                data: 'id',
+                name: 'select',
+                render: function (data, type, row) {
+                    return `<input type="radio" name="products" value="${data}">`;
+                },
+                orderable: false,
+                searchable: false
+            },
+            {data: 'name', name: 'name'},
+            {data: 'image', name: 'image'},
+            {data: 'weight', name: 'weight'},
+            {data: 'type', name: 'type'},
+            {data: 'created_at', name: 'created_at'},
+            {data: 'action', name: 'action', orderable: false, searchable: false}
+        ]
+
+    });
+
+    $('#search').click(function() {
+        oTable.draw();
+        e.preventDefault();
+    });
+    $('#reset').click(function() {
+        $('input[name=firstname]').val('');
+        $('input[name=lastname]').val('');
+        $('input[name=email]').val('');
+        oTable.draw();
+    });
+    $('#users-table').on('draw.dt', function() {
+     $('[data-toggle="tooltip"]').tooltip();
+     if (feather) {
+                feather.replace({
+                    width: 14,
+                    height: 14
+                });
+            }
+});
 
     });
 
