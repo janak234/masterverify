@@ -65,8 +65,8 @@ class HomeController extends Controller
                 'weight'=>$code->product->weight,
                 'brand'=>$code->product->brand,
                 'type'=>$code->product->type,
-                'manufacturing'=>$code->batch->manufacturing,
-                'expiry'=>$code->batch->expiry,
+                'manufacturing'=>$code->batch->manufacturing?date('m/d/Y',strtotime($code->batch->manufacturing)):'',
+                'expiry'=>$code->batch->expiry?date('m/d/Y',strtotime($code->batch->expiry)):'',
             );
             if($code->is_verified == 1){
                 return response()->json(['msg' => 'Product Alredy Verified','success'=>'1' ,'is_verified'=>$code->is_verified,'data'=>$data]);
