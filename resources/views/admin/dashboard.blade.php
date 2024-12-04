@@ -12,6 +12,7 @@
       opacity: 1;
     }
   </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <div class="app-content content ">
     <div class="content-overlay"></div>
@@ -23,19 +24,30 @@
             <div class="row">
                 <div class="col-xl-12 mb-4 col-lg-12 col-12">
                     <div class="card h-100">
+                      <form id="form_filter" method="post" action="{{route('export_all_code')}}">
+                        @csrf
                       <div class="card-header">
                         <div class="d-flex justify-content-between mb-3">
                           <h5 class="card-title mb-0">Statistics</h5>
                         </div>
-                         <div class="col-lg-4">
+                        
+                        <div class="col-lg-6" style="display: flex ; justify-content:space-evenly;margin-top: -50px;">
+                          <div>
+                           <p class="card-text font-small-2 me-25 mb-0">
+                            <input type="text" id="date-range" class="form-control Filter" name="date" /></p>
+                         </div>
+                         <div>
                           <select name="select_brand" id="select_brand" class="form-control dt-input dt-full-name" id="">
                               <option value="">--Brand Selector--</option>  
                               @foreach($brands as $key=>$value)
                                <option value="{{$value}}">{{$value}}</option>  
                               @endforeach
                           </select>
+                          </div>
+                        </div>
+                       
                       </div>
-                      </div>
+                       </form>
                      
                       <style> .badged i{height: 1.45rem; width: 1.45rem; font-size: 1.45rem; margin-right: 1.1rem; -webkit-flex-shrink: 0; -ms-flex-negative: 0; flex-shrink: 0;} .badgex{margin-right: 5px;} .badgex .feather, [data-feather] {height: 2rem; width: 2rem; display: inline-block; }</style>
                       <div class="card-body">
@@ -83,7 +95,7 @@
                         <br/>
                         <div class="row">
                           <div class="col-md-12 col-12">
-                            <a href="{{route('export_all_code')}}"><button  type="button" class="btn btn-success"><i data-feather="file-text"></i>&nbsp;Export All Verified Code</button></a>
+                            <a href="javascript:void(0);" onclick="document.getElementById('form_filter').submit();"><button  type="button" class="btn btn-success"><i data-feather="file-text"></i>&nbsp;Export Verified Code</button></a>
                           </div>
                         </div>  
                       </div>
@@ -155,6 +167,8 @@
 
 @endsection
 @section('script')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/buttons.bootstrap4.min.css') }}" rel="stylesheet">
 <link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <link href="{{ asset('admin/app-assets/vendors/css/tables/datatable/responsive.bootstrap4.min.css') }}" rel="stylesheet">
@@ -170,7 +184,10 @@
     <script type="text/javascript">
      const states  = @json($metrix); // Pass metrix data to JavaScript
       $('#select_brand').on('change',function(){
-          $.get("{{route('dashboard')}}",{brand:$(this).val()},function(result){
+        var dateRangePicker = $('#date-range').data('daterangepicker');
+        var startDate = dateRangePicker.startDate.format('YYYY-MM-DD');
+        var endDate = dateRangePicker.endDate.format('YYYY-MM-DD');
+          $.post("{{route('dashboard')}}",{brand:$(this).val(),start:startDate,end:endDate},function(result){
               if(result){
                  $.each(result,function(i,v){
                     $('.'+i).text(v);
@@ -198,26 +215,41 @@
           }
 
       });
-      // $(document).on('click','.view_detail',function(){
-      //   state=$(this).attr('id');
-      //   $('#exampleModalLabel').text(state?state:'Unknown');
-      //   $('.detail-body').empty();
-      //   $.get("{{route('get_state_wise_detail')}}",{state:state},function(result){
-      //       if(result){
-      //         $.each(result, function(index, item) {
-      //             var row = '<tr>';
-      //             row += '<td>' + (index+1) + '</td>';
-      //             row += '<td>' + item.brand + '</td>';
-      //             row += '<td>' + item.name + '</td>';
-      //             row += '<td>' + item.count + '</td>';
-      //             row += '</tr>';
-      //             $('.detail-body').append(row);
-      //         });
-      //         $('#detail-table').DataTable();
-      //       }
-      //   });
-      //   $('#exampleModal').modal('show');
-      // })
+      $('#date-range').daterangepicker({
+        startDate: moment().startOf('year'),
+        endDate: moment().endOf('year'), 
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'This Year': [moment().startOf('year'), moment().endOf('year')]
+        },
+        opens: 'left',
+        locale: {
+            format: 'YYYY-MM-DD'
+        }
+    });
+      $('#date-range').on('apply.daterangepicker', function(ev, picker) {
+        var startDate = picker.startDate.format('YYYY-MM-DD');
+        var endDate = picker.endDate.format('YYYY-MM-DD');
+        $.ajax({
+            url: "{{route('dashboard')}}",
+            method: 'Post',
+            data: {
+                start: startDate,
+                end: endDate,
+                brand:$('#select_brand').val(),
+            },
+            success: function(result) {
+                $.each(result,function(i,v){
+                  $('.'+i).text(v);
+                });
+            }
+        });
+      });
       $(document).on('click', '.view_detail', function() {
           if ($.fn.dataTable.isDataTable('#detail-table')) {
             $('#detail-table').DataTable().clear().destroy();

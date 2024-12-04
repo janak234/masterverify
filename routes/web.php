@@ -38,10 +38,10 @@ Auth::routes([
 
 Route::group(['middleware' => 'auth'], function () {
     Route::namespace ('Admin')->group(function () {
-        Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::match(['get','post'],'/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/admin/get_state_wise', [DashboardController::class, 'get_state_wise'])->name('get_state_wise');
         Route::get('/admin/get_state_wise_detail', [DashboardController::class, 'get_state_wise_detail'])->name('get_state_wise_detail');
-        Route::get('/admin/export_all_code', [DashboardController::class, 'export_all_code'])->name('export_all_code');
+        Route::post('/admin/export_all_code', [DashboardController::class, 'export_all_code'])->name('export_all_code');
         Route::resource('/admin/users', 'UserController');
 
         Route::get('/admin/getusers', [UserController::class, 'getusers'])->name('getusers');

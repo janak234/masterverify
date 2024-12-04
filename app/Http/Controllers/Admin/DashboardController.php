@@ -10,15 +10,20 @@ use DataTables;
 use DB;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {   if($request->ajax()){
-            if($request->brand){
-                $result['total_product']=Product::where('brand',$request->brand)->count();
-                $result['product_verified']=BatchProduct::join('products','products.id','batch_products.product_id')->where('is_verified',1)->where('brand',$request->brand)->count();
-                $result['codes_generated']=BatchProduct::join('products','products.id','batch_products.product_id')->where('code', 'not like', 'MTA%')->where('brand',$request->brand)->count();
-                $result['total_scan']=BatchProduct::join('products','products.id','batch_products.product_id')->whereYear('batch_products.updated_at', date('Y'))->whereMonth('batch_products.updated_at',date('m'))->where('is_verified',1)->where('brand',$request->brand)->count();
+            if($request->brand || ($request->start || $request->end)){
+                $startDate = $request->start ? $request->start : '1970-01-01';
+                $endDate = $request->end ? $request->end : now();
+                $result['total_product']=Product::when($request->brand, function ($query) use ($request) {
+                        $query->where('brand', $request->brand);
+                    })->whereBetween('created_at', [$startDate, $endDate])->count();
+                $result['product_verified']=BatchProduct::join('products','products.id','batch_products.product_id')->where('is_verified',1)->whereBetween('batch_products.updated_at', [$startDate, $endDate])->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->count();
+                $result['codes_generated']=BatchProduct::join('products','products.id','batch_products.product_id')->where('code', 'not like', 'MTA%')->whereBetween('batch_products.updated_at', [$startDate, $endDate])->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->count();
+                $result['total_scan']=BatchProduct::join('products','products.id','batch_products.product_id')->whereYear('batch_products.updated_at', date('Y'))->whereMonth('batch_products.updated_at',date('m'))->where('is_verified',1)->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->whereBetween('batch_products.updated_at', [$startDate, $endDate])->count();
                 return response()->json($result, 200);
             }
         }
@@ -67,7 +72,17 @@ class DashboardController extends Controller
         }          
     }
     public function export_all_code(Request $request){
-        $codes=BatchProduct::select('ip_address','code','name','type','brand','weight','city','state','country','zip_code')->join('products', 'products.id', '=', 'batch_products.product_id')->where('is_verified', 1)->get();
+        list($startDate, $endDate) = explode(' - ', $request->date);
+        $startDate = Carbon::createFromFormat('Y-m-d', $startDate);
+        $endDate = Carbon::createFromFormat('Y-m-d', $endDate);
+        $codes=BatchProduct::select('ip_address','code','name','type','brand','weight','city','state','country','zip_code',\DB::raw('DATE_FORMAT(batch_products.updated_at, "%m/%d/%Y %H:%i:%s") as verified_date'))->join('products', 'products.id', '=', 'batch_products.product_id')->where('is_verified', 1);
+        if($startDate && $endDate){
+            $codes=$codes->whereBetween('batch_products.updated_at', [$startDate, $endDate]);
+        }
+        if($request->select_brand){
+            $codes=$codes->where('brand',$request->select_brand);
+        }
+        $codes=$codes->get();
         return Excel::download(new class($codes) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
             private $codes;
 
@@ -83,7 +98,7 @@ class DashboardController extends Controller
 
             public function headings(): array
             {
-                return ['Ip','Code','Name','Type','Brand','Weight','City','State','Country','Zip Code'];
+                return ['Ip','Code','Name','Type','Brand','Weight','City','State','Country','Zip Code','Verified Date'];
             }
         }, 'verified_codes.xlsx');
     }
