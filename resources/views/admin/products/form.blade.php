@@ -79,7 +79,7 @@
                                                 <input type="text" name="brand" id="brand"
                                                     class="form-control @if($errors->has('brand')) error @endif"
                                                     placeholder="Brand" aria-label="brand"
-                                                    value="{{$user->type}}">
+                                                    value="{{$user->brand}}">
                                                 @if($errors->has('tybrandpe'))
                                                 <label id="brand-error" class="error"
                                                     for="brand">{{ $errors->first('brand') }}</label>
