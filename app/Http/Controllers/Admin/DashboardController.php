@@ -24,7 +24,6 @@ class DashboardController extends Controller
                 $result['product_verified']=BatchProduct::join('products','products.id','batch_products.product_id')->where('is_verified',1)->whereBetween('batch_products.updated_at', [$startDate, $endDate])->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->count();
                 $result['codes_generated']=BatchProduct::join('products','products.id','batch_products.product_id')->where('code', 'not like', 'MTA%')->whereBetween('batch_products.updated_at', [$startDate, $endDate])->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->count();
                 $result['total_scan']=BatchProduct::join('products','products.id','batch_products.product_id')->whereYear('batch_products.updated_at', date('Y'))->whereMonth('batch_products.updated_at',date('m'))->where('is_verified',1)->when($request->brand, function ($query) use ($request) {$query->where('brand', $request->brand); })->whereBetween('batch_products.updated_at', [$startDate, $endDate])->count();
-                return response()->json($result, 200);
             }
         }
         $result['total_product']=Product::count();
@@ -48,9 +47,14 @@ class DashboardController extends Controller
     }
     public function get_state_wise(Request $request){
         if($request->ajax()){
-            $states=BatchProduct::selectRaw('state, COUNT(*) as product_count')->where('is_verified',1)
-                        ->groupBy('state')
-                        ->get();  
+            $states=BatchProduct::selectRaw('state, COUNT(*) as product_count')->join('products','products.id','batch_products.product_id')->where('is_verified',1);
+            if($request->brand_name){
+                $states=$states->where('brand',$request->brand_name);
+            }
+            if($request->start_date && $request->end_date){
+                $states=$states->whereBetween('batch_products.updated_at', [$request->start_date,$request->end_date]);
+            }
+            $states=$states->groupBy('state')->get();  
             return Datatables::of($states)->addIndexColumn()->editColumn('state', function ($state) {
                     return $state->state?$state->state:'Unknown';
                 })->addColumn('action', function ($state) {
@@ -70,6 +74,24 @@ class DashboardController extends Controller
                     ->get();
             return Datatables::of($result)->addIndexColumn()->make(true);
         }          
+    }
+    public function get_map_data(Request $request){
+        if($request->ajax()){
+                    $metrix=BatchProduct::selectRaw(' state, COUNT(*) as metric')->join('products','products.id','batch_products.product_id')->where('is_verified', 1) ->whereNotNull('state');
+                    if($request->brand_name){
+                        $metrix=$metrix->where('brand',$request->brand_name);
+                    }
+                    if($request->start_date && $request->end_date){
+                        $metrix=$metrix->whereBetween('batch_products.updated_at', [$request->start_date,$request->end_date]);
+                    }
+                    $metrix=$metrix->groupBy('state')->get()->map(function ($item) {
+                            return [
+                                'name' => $item->state,
+                                'metric' => $item->metric,
+                            ];
+                    });    
+            return response()->json($metrix, 200);
+        }
     }
     public function export_all_code(Request $request){
         list($startDate, $endDate) = explode(' - ', $request->date);

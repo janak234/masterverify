@@ -182,24 +182,22 @@
 <script src="{{ asset('admin/app-assets/vendors/js/tables/datatable/buttons.html5.min.js') }}"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script type="text/javascript">
-     const states  = @json($metrix); // Pass metrix data to JavaScript
-      $('#select_brand').on('change',function(){
-        var dateRangePicker = $('#date-range').data('daterangepicker');
-        var startDate = dateRangePicker.startDate.format('YYYY-MM-DD');
-        var endDate = dateRangePicker.endDate.format('YYYY-MM-DD');
-          $.post("{{route('dashboard')}}",{brand:$(this).val(),start:startDate,end:endDate},function(result){
-              if(result){
-                 $.each(result,function(i,v){
-                    $('.'+i).text(v);
-                 })
-              }
-          });
-      });
-      var oTable = $('#users-table').DataTable({
+     const states  = @json($metrix);
+     var brand_name=""
+     var start_date=""
+     var end_date=""
+     var oTable = $('#users-table').DataTable({
           processing: true,
           serverSide: true,
           ajax: {
               url: "{{route('get_state_wise')}}",
+                data: function(d) {
+                  return $.extend({}, d, {
+                    brand_name: brand_name,
+                    start_date:start_date,
+                    end_date:end_date,
+                 });
+               }
           },
           columns: [
               {data: 'DT_RowIndex', name: 'DT_RowIndex'},
@@ -214,6 +212,22 @@
             }
           }
 
+      });
+      $('#select_brand').on('change',function(){
+        var dateRangePicker = $('#date-range').data('daterangepicker');
+        var startDate = dateRangePicker.startDate.format('YYYY-MM-DD');
+        var endDate = dateRangePicker.endDate.format('YYYY-MM-DD');
+        brand_name=$(this).val();
+        start_date=startDate;
+        end_date=endDate;
+          $.post("{{route('dashboard')}}",{brand:$(this).val(),start:startDate,end:endDate},function(result){
+              if(result){
+                 $.each(result,function(i,v){
+                    $('.'+i).text(v);
+                 })
+              }
+          });
+          oTable.ajax.reload();
       });
       $('#date-range').daterangepicker({
         startDate: moment().startOf('year'),
@@ -235,6 +249,9 @@
       $('#date-range').on('apply.daterangepicker', function(ev, picker) {
         var startDate = picker.startDate.format('YYYY-MM-DD');
         var endDate = picker.endDate.format('YYYY-MM-DD');
+        brand_name=$('#select_brand').val();
+        start_date=startDate;
+        end_date=endDate;
         $.ajax({
             url: "{{route('dashboard')}}",
             method: 'Post',
@@ -249,6 +266,7 @@
                 });
             }
         });
+         oTable.ajax.reload();
       });
       $(document).on('click', '.view_detail', function() {
           if ($.fn.dataTable.isDataTable('#detail-table')) {
@@ -276,48 +294,85 @@
             $('#exampleModal').modal('show');
       });
     </script>
-    <script>
-        var map = L.map('map').setView([37.8, -96], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        var stateData = states;
-        $.getJSON('{{url("/")}}/us-states.json', function(geojsonData) {
+   <script>
+    var map = L.map('map').setView([37.8, -96], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var stateData = states;  // Original state data
+
+    $.getJSON('{{url("/")}}/us-states.json', function(geojsonData) {
+        geojsonData.features.forEach(function(feature) {
+            var stateName = feature.properties.name;
+            var stateValue = stateData.find(item => item.name === stateName)?.metric;
+            feature.properties.value = stateValue || 0;
+        });
+
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties.value),
+                weight: 1,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7
+            };
+        }
+
+        function getColor(value) {
+            return value > 100 ? '#800026' :
+                   value > 50  ? '#BD0026' :
+                   value > 25  ? '#E31A1C' :
+                   value > 10  ? '#FC4E2A' :
+                   value > 5   ? '#FD8D3C' :
+                   value > 0   ? '#FEB24C' :
+                                 '#FFEDA0';
+        }
+
+        function onEachFeature(feature, layer) {
+            if (feature.properties && feature.properties.name) {
+                layer.bindPopup("<strong>" + feature.properties.name + "</strong><br>Value: " + feature.properties.value);
+            }
+        }
+
+        function updateMapData(stateData) {
+            // Re-render the map with the updated stateData
             geojsonData.features.forEach(function(feature) {
                 var stateName = feature.properties.name;
                 var stateValue = stateData.find(item => item.name === stateName)?.metric;
                 feature.properties.value = stateValue || 0;
             });
-            function style(feature) {
-                return {
-                    fillColor: getColor(feature.properties.value),
-                    weight: 1,
-                    opacity: 1,
-                    color: 'white',
-                    dashArray: '3',
-                    fillOpacity: 0.7
-                };
-            }
 
-            function getColor(value) {
-                return value > 100 ? '#800026' :
-                       value > 50  ? '#BD0026' :
-                       value > 25  ? '#E31A1C' :
-                       value > 10  ? '#FC4E2A' :
-                       value > 5   ? '#FD8D3C' :
-                       value > 0   ? '#FEB24C' :
-                                     '#FFEDA0';
-            }
-            L.geoJSON(geojsonData, { style: style }).addTo(map);
-            function onEachFeature(feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup("<strong>" + feature.properties.name + "</strong><br>Value: " + feature.properties.value);
+            // Re-render the geoJSON with the updated values
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.GeoJSON) {
+                    map.removeLayer(layer);  // Remove previous GeoJSON layer
                 }
-            }
+            });
+
             L.geoJSON(geojsonData, {
                 style: style,
                 onEachFeature: onEachFeature
             }).addTo(map);
+        }
+
+        // Initial rendering of the map
+        L.geoJSON(geojsonData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);
+        $('#select_brand').on('change', function() {
+            $.get("{{route('get_map_data')}}",{brand_name:brand_name,start_date:start_date,end_date:end_date},function(result){
+                updateMapData(result);
+            }); 
         });
-  </script>
+        $('#date-range').on('apply.daterangepicker', function(ev, picker) {
+              $.get("{{route('get_map_data')}}",{brand_name:brand_name,start_date:start_date,end_date:end_date},function(result){
+                updateMapData(result);
+            }); 
+        });
+    });
+</script>
+
 @endsection

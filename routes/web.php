@@ -41,6 +41,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::match(['get','post'],'/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/admin/get_state_wise', [DashboardController::class, 'get_state_wise'])->name('get_state_wise');
         Route::get('/admin/get_state_wise_detail', [DashboardController::class, 'get_state_wise_detail'])->name('get_state_wise_detail');
+        Route::get('/admin/get_map_data', [DashboardController::class, 'get_map_data'])->name('get_map_data');
         Route::post('/admin/export_all_code', [DashboardController::class, 'export_all_code'])->name('export_all_code');
         Route::resource('/admin/users', 'UserController');
 
